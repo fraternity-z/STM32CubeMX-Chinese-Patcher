@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/STM32CubeMX.ChinesePatcher.Core/STM32CubeMX.ChinesePatcher.Core.csproj" />
+    <Project Path="src/STM32CubeMX.ChinesePatcher/STM32CubeMX.ChinesePatcher.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/STM32CubeMX.ChinesePatcher.Tests/STM32CubeMX.ChinesePatcher.Tests.csproj" />
+  </Folder>
+</Solution>

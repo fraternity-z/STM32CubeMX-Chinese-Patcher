@@ -1,0 +1,166 @@
+# STM32CubeMX 6.16.0-RC4 Chinese overlay dictionary.
+# Format: English<TAB>Chinese. Matching is exact and case-sensitive.
+Window	窗口
+Outputs	输出
+Smaller (low-res. display)	较小（低分辨率显示）
+Medium	中等
+Larger (high-res. display)	较大（高分辨率显示）
+Display size	显示大小
+Change the size of text and other items	更改文字和其他项目的大小
+Default Theme	默认主题
+Dark Theme	深色主题
+Theme(Beta)	主题（测试版）
+Help	帮助
+Display the Help	显示帮助
+About	关于
+About STM32CubeMX	关于 STM32CubeMX
+Docs & Resources	文档与资源
+Technical Documentation	技术文档
+Refresh Data	刷新数据
+Refresh data and documents for MCUs, Boards and Examples	刷新 MCU、开发板和示例的数据与文档
+GENERATE CODE	生成代码
+CHECK LPBAM DESIGN	检查 LPBAM 设计
+Home	主页
+<html><br>Existing Projects<br><br><br></html>	<html><br>现有工程<br><br><br></html>
+<html>Open Existing Projects</html>	<html>打开现有工程</html>
+<html>Recent Opened Projects<br><br></html>	<html>最近打开的工程<br><br></html>
+<html>Other Projects</html>	<html>其他工程</html>
+<html><br>New Project<br><br><br></html>	<html><br>新建工程<br><br><br></html>
+<html> <br> Other Services <br></html>	<html> <br> 其他服务 <br></html>
+<html>I need to :<br><br></html>	<html>我需要：<br><br></html>
+Start My project from MCU	从 MCU 开始创建工程
+ACCESS TO MCU SELECTOR	打开 MCU 选择器
+Start My project from ST Board	从 ST 开发板开始创建工程
+ACCESS TO BOARD SELECTOR	打开开发板选择器
+Start My project from Example	从示例开始创建工程
+ACCESS TO EXAMPLE SELECTOR	打开示例选择器
+ACCESS TO CROSS SELECTOR	打开交叉选择器
+ACCESS TO COMPARE PROJECTS	比较工程
+<html><br>Manage software installations<br><br></html>	<html><br>管理软件安装<br><br></html>
+Check for STM32CubeMX and embedded software packages updates	检查 STM32CubeMX 和嵌入式软件包更新
+CHECK FOR UPDATES	检查更新
+Install or remove embedded software packages	安装或移除嵌入式软件包
+INSTALL / REMOVE	安装 / 移除
+<html><a><u>Data collection information notice</u></a></html>	<html><a><u>数据收集信息声明</u></a></html>
+About STM32	关于 STM32
+External Tools	外部工具
+LPBAM Scenario & Configuration	LPBAM 场景与配置
+File Manager	文件管理器
+Project Manager	工程管理器
+Tutorial Videos	教程视频
+User Preferences	用户首选项
+Tools	工具
+Confirm the Project Settings please	请确认工程设置
+Warning	警告
+Information	信息
+Error	错误
+Mcu	MCU
+MCU	MCU
+Board	开发板
+Boards	开发板
+Example	示例
+Examples	示例
+New Project from a MCU/MPU	从 MCU/MPU 新建工程
+New Project from a Board	从开发板新建工程
+New Project from Example	从示例新建工程
+New Project from Cross Selector	从交叉选择器新建工程
+New Project	新建工程
+File	文件
+New Project ...	新建工程...
+Create a New Project	创建新工程
+Load Project ...	加载工程...
+Load a Project	加载工程
+Import Project ...	导入工程...
+Import Project	导入工程
+Import Project Settings	导入工程设置
+Import project: available for new Project without compound pins	导入工程：仅适用于不含复合引脚的新工程
+Pin to pin compatibility	引脚兼容性
+Save Project	保存工程
+Save the current Project	保存当前工程
+Save Project As ..	工程另存为...
+Save Project As	工程另存为
+Save the Project in a new file	将工程保存到新文件
+Close Project	关闭工程
+Close current Project	关闭当前工程
+Generate Report	生成报告
+Generate Project report files (pdf and txt)	生成工程报告文件（PDF 和 TXT）
+Recent Projects	最近工程
+Exit	退出
+Exit STM32CubeMX	退出 STM32CubeMX
+Compare existing IOC with current project configuration	将现有 IOC 与当前工程配置进行比较
+Untitled	未命名
+Project	工程
+Generate Code	生成代码
+Generate source code based on user settings	根据用户设置生成源代码
+Select additional software components	选择其他软件组件
+Add Pack Software components to the Project	向工程添加软件包组件
+Settings ...	设置...
+Settings for software Project	软件工程设置
+Project Settings	工程设置
+Warning: Save Project As	警告：工程另存为
+Imported Project	已导入工程
+Import MX Settings	导入 MX 设置
+Check Update Manager	检查更新管理器
+Pinout & Configuration	引脚与配置
+Clock Configuration	时钟配置
+Middleware and Software Packs	中间件与软件包
+System Core	系统核心
+Connectivity	连接
+Multimedia	多媒体
+Computing	计算
+Analog	模拟
+Timers	定时器
+Software Packs	软件包
+Categories	类别
+Search	搜索
+Search Results	搜索结果
+Configuration	配置
+Parameter Settings	参数设置
+User Label	用户标签
+Reset State	复位状态
+GPIO Settings	GPIO 设置
+NVIC Settings	NVIC 设置
+DMA Settings	DMA 设置
+Mode	模式
+Name	名称
+Value	值
+Description	说明
+Status	状态
+Enabled	已启用
+Disabled	已禁用
+Enable	启用
+Disable	禁用
+Add	添加
+Remove	移除
+Edit	编辑
+Delete	删除
+Clear	清除
+Reset	重置
+Restore	恢复
+Apply	应用
+Browse	浏览
+Open	打开
+Close	关闭
+Save	保存
+Download	下载
+Update	更新
+Refresh	刷新
+Check for Updates	检查更新
+Back	上一步
+Next	下一步
+Finish	完成
+Cancel	取消
+OK	确定
+Ok	确定
+Yes	是
+No	否
+YES	是
+NO	否
+Retry	重试
+Ignore	忽略
+Details	详细信息
+Advanced Settings	高级设置
+Code Generator	代码生成器
+Working	处理中
+Loading...	正在加载...
+Please wait...	请稍候...
