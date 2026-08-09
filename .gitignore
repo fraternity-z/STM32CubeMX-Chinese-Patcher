@@ -8,3 +8,4 @@ artifacts/*-smoke/
 *.user
 *.suo
 .vs/
+AGENTS.md

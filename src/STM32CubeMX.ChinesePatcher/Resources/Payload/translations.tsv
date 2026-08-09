@@ -64,6 +64,28 @@ New Project from a MCU/MPU	从 MCU/MPU 新建工程
 New Project from a Board	从开发板新建工程
 New Project from Example	从示例新建工程
 New Project from Cross Selector	从交叉选择器新建工程
+MCU/MPU Selector	MCU/MPU 选择器
+Board Selector	开发板选择器
+Example Selector	示例选择器
+Cross Selector	交叉选择器
+MCU/MPU Filters	MCU/MPU 筛选器
+Commercial Part Number	商用料号
+PRODUCT INFO	产品信息
+Segment	产品类别
+Series	系列
+Line	产品线
+Marketing Status	市场状态
+Price	价格
+Package	封装
+Features	特性
+Block Diagram	框图
+CAD Resources	CAD 资源
+Datasheet	数据手册
+Buy	购买
+Start Project	创建工程
+Commercial Part No	商用料号
+Part No	料号
+Reference	参考型号
 New Project	新建工程
 File	文件
 New Project ...	新建工程...

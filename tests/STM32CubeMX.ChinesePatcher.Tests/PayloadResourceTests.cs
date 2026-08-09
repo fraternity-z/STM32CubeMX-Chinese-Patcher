@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace STM32CubeMX.ChinesePatcher.Tests;
 
@@ -80,7 +81,57 @@ public sealed class PayloadResourceTests
         Assert.AreEqual("比较工程", entries["Compare Projects"]);
         Assert.AreEqual("仅显示差异", entries["Show differences only"]);
         Assert.AreEqual("可编程逻辑阵列（PLAY）", entries["Programmable logic array (PLAY)"]);
+
+        var selectorLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["MCU/MPU Selector"] = "MCU/MPU 选择器",
+            ["Board Selector"] = "开发板选择器",
+            ["Example Selector"] = "示例选择器",
+            ["Cross Selector"] = "交叉选择器",
+            ["MCU/MPU Filters"] = "MCU/MPU 筛选器",
+            ["Commercial Part Number"] = "商用料号",
+            ["PRODUCT INFO"] = "产品信息",
+            ["Segment"] = "产品类别",
+            ["Series"] = "系列",
+            ["Line"] = "产品线",
+            ["Marketing Status"] = "市场状态",
+            ["Price"] = "价格",
+            ["Package"] = "封装",
+            ["Features"] = "特性",
+            ["Block Diagram"] = "框图",
+            ["CAD Resources"] = "CAD 资源",
+            ["Datasheet"] = "数据手册",
+            ["Buy"] = "购买",
+            ["Start Project"] = "创建工程",
+            ["Commercial Part No"] = "商用料号",
+            ["Part No"] = "料号",
+            ["Reference"] = "参考型号",
+        };
+        foreach (var (source, translation) in selectorLabels)
+        {
+            Assert.AreEqual(translation, entries[source], $"选择器界面词条不正确：{source}");
+        }
+
+        var protectedTerms = new[]
+        {
+            "Flash", "RAM", "SRAM", "EEPROM", "MCU", "MPU", "GPIO", "NVIC", "DMA", "I/O", "CAD", "PDF", "TXT", "PLAY",
+        };
+        foreach (var (source, translation) in entries)
+        {
+            foreach (var term in protectedTerms.Where(term => ContainsTechnicalTerm(source, term)))
+            {
+                Assert.IsTrue(
+                    ContainsTechnicalTerm(translation, term),
+                    $"专业术语 {term} 不应翻译：{source} -> {translation}");
+            }
+        }
     }
+
+    private static bool ContainsTechnicalTerm(string text, string term) =>
+        Regex.IsMatch(
+            text,
+            $@"(?<![A-Za-z0-9]){Regex.Escape(term)}(?![A-Za-z0-9])",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     private static Stream OpenResource(string name) =>
         Assembly.GetExecutingAssembly().GetManifestResourceStream(name)
