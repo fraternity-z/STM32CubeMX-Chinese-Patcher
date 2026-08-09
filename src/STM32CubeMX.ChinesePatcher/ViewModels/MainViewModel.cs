@@ -326,10 +326,13 @@ public sealed class MainViewModel : ObservableObject
     private void UpdateDisplay()
     {
         var installation = _installation!;
+        var compatibilityError = CubeMxCompatibility.GetApplyBlockReason(installation);
         PathDisplay = installation.RootPath;
         DetectionSourceText = SourceToText(installation.Source);
         CubeVersion = installation.Version;
-        VersionDetail = $"JRE {installation.JavaVersion}";
+        VersionDetail = compatibilityError is null
+            ? $"JRE {installation.JavaVersion} · 兼容"
+            : $"JRE {installation.JavaVersion} · 未验证";
 
         (RunningValue, RunningDetail, RunningAccent, RunningSurface) = _runningState switch
         {
@@ -372,6 +375,11 @@ public sealed class MainViewModel : ObservableObject
             StatusMessage = "发现来源不明的同名汉化文件，已停止覆盖";
             StatusAccent = "#B42318";
         }
+        else if (compatibilityError is not null)
+        {
+            StatusMessage = compatibilityError;
+            StatusAccent = "#B42318";
+        }
         else
         {
             StatusMessage = _inspection.Message;
@@ -411,7 +419,8 @@ public sealed class MainViewModel : ObservableObject
         !IsBusy
         && _installation is not null
         && _runningState == RunningState.Stopped
-        && _inspection.State != LocalizationState.Conflict;
+        && _inspection.State != LocalizationState.Conflict
+        && CubeMxCompatibility.GetApplyBlockReason(_installation) is null;
 
     private bool CanRollback() =>
         !IsBusy

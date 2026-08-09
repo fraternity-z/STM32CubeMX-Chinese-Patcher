@@ -38,6 +38,7 @@ public sealed class PatchService
         CancellationToken cancellationToken = default)
     {
         ValidateInstallation(installation);
+        ValidateApplyCompatibility(installation);
         using var operationLock = InstallationOperationLock.Acquire(installation.RootPath);
         EnsureStopped(installation);
         cancellationToken.ThrowIfCancellationRequested();
@@ -170,12 +171,14 @@ public sealed class PatchService
         {
             throw new FileNotFoundException("未找到 STM32CubeMX 启动配置。", installation.IniPath);
         }
+    }
 
-        var majorVersionText = installation.JavaVersion.Split('.', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        if (!int.TryParse(majorVersionText, out var majorVersion) || majorVersion < 21)
+    private static void ValidateApplyCompatibility(CubeMxInstallation installation)
+    {
+        var blockReason = CubeMxCompatibility.GetApplyBlockReason(installation);
+        if (blockReason is not null)
         {
-            throw new InvalidOperationException(
-                $"当前汉化载荷要求 JRE 21 或更高版本，检测到：{installation.JavaVersion}。");
+            throw new InvalidOperationException(blockReason);
         }
     }
 

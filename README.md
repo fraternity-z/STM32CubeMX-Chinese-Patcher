@@ -34,13 +34,28 @@
 
 汉化覆盖 Swing/AWT 界面；CubeMX 内嵌浏览器页面可能仍显示英文。软件升级后的新增英文文案也可能需要补充词典。
 
+## 兼容性
+
+- 当前仅允许在已验证的 STM32CubeMX 6.16.0-RC4、6.17.0、6.18.0 和 6.18.1-RC2 上汉化。
+- 汉化 Agent 使用 Java 21 class，目标安装需要 JRE 21 或更高版本。
+- 对未验证的 CubeMX 版本会禁用汉化并显示明确原因，避免新版界面变化导致启动异常。
+- 版本或 JRE 不兼容时仍允许回退已有汉化，不会把用户锁在旧 Agent 上。
+
 ## 开发与发布
 
 环境要求：Windows 10/11、.NET 10 SDK。
 
 ```powershell
 dotnet test .\STM32CubeMX.ChinesePatcher.slnx -c Debug
+dotnet build .\src\STM32CubeMX.ChinesePatcher\STM32CubeMX.ChinesePatcher.csproj -c Debug
+.\scripts\verify-integration.ps1
 .\build.ps1
+```
+
+升级 CubeMX 后，可先将完整安装目录复制到项目 `artifacts`，再对隔离副本运行：
+
+```powershell
+.\scripts\verify-cubemx-compatibility.ps1 -CubeMxRoot .\artifacts\rc2-smoke\STM32CubeMX
 ```
 
 发布产物位于 `artifacts\publish\win-x64\STM32CubeMX-Chinese-Patcher.exe`。该文件为自包含单文件应用，目标电脑无需预装 .NET 运行库。

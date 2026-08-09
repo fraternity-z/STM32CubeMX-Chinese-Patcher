@@ -206,6 +206,41 @@ public sealed class PatchServiceTests
     }
 
     [TestMethod]
+    [DataRow("6.15.1")]
+    [DataRow("6.19.0")]
+    [DataRow("7.0.0-RC1")]
+    [DataRow("未知")]
+    public void Apply_RejectsUnverifiedCubeMxVersion(string version)
+    {
+        using var install = new TempCubeMxFixture();
+        var service = CreateService(StoppedProcesses());
+        var installation = install.Installation() with { Version = version };
+
+        var exception = TestAssert.Throws<InvalidOperationException>(() => service.Apply(installation));
+
+        StringAssert.Contains(exception.Message, CubeMxCompatibility.SupportedVersionRange);
+        Assert.IsFalse(Directory.Exists(PatcherPaths.LocalizationDirectory(install.RootPath)));
+    }
+
+    [TestMethod]
+    public void Rollback_RemainsAvailableForUnverifiedCubeMxAndJavaVersions()
+    {
+        using var install = new TempCubeMxFixture();
+        File.AppendAllText(
+            install.IniPath,
+            PatcherPaths.AgentLine(install.RootPath) + Environment.NewLine,
+            new UTF8Encoding(false));
+        var service = CreateService(StoppedProcesses());
+        var installation = install.Installation("17.0.12") with { Version = "7.0.0" };
+
+        var result = service.Rollback(installation);
+
+        Assert.IsTrue(result.Succeeded);
+        Assert.IsFalse(File.ReadAllLines(install.IniPath).Any(line =>
+            PatchStateInspector.IsManagedAgentLine(line, install.RootPath)));
+    }
+
+    [TestMethod]
     public void Apply_RejectsMissingExecutable()
     {
         using var install = new TempCubeMxFixture();

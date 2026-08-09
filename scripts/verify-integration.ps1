@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$ExecutablePath
+    [string]$ExecutablePath,
+
+    [ValidateRange(10, 120)]
+    [int]$TimeoutSeconds = 60
 )
 
 Set-StrictMode -Version Latest
@@ -41,16 +44,25 @@ function Invoke-Worker {
         requestId = $requestId
         operation = $Operation
         rootPath = $fixture
-        version = 'integration-test'
+        version = '6.18.1-RC2'
         javaVersion = '21.0.10'
     }
     $json = $request | ConvertTo-Json -Compress
     $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
-    $process = Start-Process `
-        -FilePath $executable `
-        -ArgumentList @('--elevated-worker', $encoded) `
-        -PassThru `
-        -Wait
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $executable
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    [void]$startInfo.ArgumentList.Add('--elevated-worker')
+    [void]$startInfo.ArgumentList.Add($encoded)
+    $process = [Diagnostics.Process]::Start($startInfo)
+    if ($null -eq $process) {
+        throw '无法启动集成验证工作进程。'
+    }
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        throw "集成验证工作进程超过 ${TimeoutSeconds} 秒仍未退出，已终止。"
+    }
 
     $resultPath = Join-Path $resultDirectory ($requestId.ToString('N') + '.json')
     if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
@@ -71,6 +83,10 @@ function Invoke-Worker {
 
 try {
     if (Test-Path -LiteralPath $fixture) {
+        $fixtureItem = Get-Item -LiteralPath $fixture -Force
+        if (($fixtureItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "拒绝清理作为重解析点的测试目录：$fixture"
+        }
         Remove-Item -LiteralPath $fixture -Recurse -Force
     }
     New-Item -ItemType Directory -Path $fixture | Out-Null

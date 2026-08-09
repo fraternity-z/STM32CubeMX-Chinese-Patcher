@@ -1,4 +1,4 @@
-# STM32CubeMX 6.16.0-RC4 Chinese overlay dictionary.
+# STM32CubeMX 6.18.1-RC2 Chinese overlay dictionary.
 # Format: English<TAB>Chinese. Matching is exact and case-sensitive.
 Window	窗口
 Outputs	输出
@@ -88,6 +88,31 @@ Recent Projects	最近工程
 Exit	退出
 Exit STM32CubeMX	退出 STM32CubeMX
 Compare existing IOC with current project configuration	将现有 IOC 与当前工程配置进行比较
+Compare Project ...	比较工程...
+Compare Projects	比较工程
+Project 1	工程 1
+Project 2	工程 2
+Select an existing project	选择现有工程
+Use current project	使用当前工程
+Show differences only	仅显示差异
+Load project 1 then try again	请加载工程 1 后重试
+Project 1 not loaded	工程 1 未加载
+Load project 2 then try again	请加载工程 2 后重试
+Project 2 not loaded	工程 2 未加载
+It's the same project as project 2.Please load another project.	该工程与工程 2 相同，请加载其他工程。
+It's the same project as project 1.Please load another project.	该工程与工程 1 相同，请加载其他工程。
+Same projects loaded	已加载相同工程
+Load projects then try again	请加载工程后重试
+Projects not loaded	工程未加载
+Project not found	未找到工程
+Target	目标
+Peripherals & Middleware	外设与中间件
+Excel files	Excel 文件
+This file already exists, overwrite it?	该文件已存在，是否覆盖？
+Failed to create Compare Projects file	创建工程比较文件失败
+Compare Projects ProgressBar	工程比较进度
+Comparison in progress	正在比较
+Comparison in progress ...	正在比较...
 Untitled	未命名
 Project	工程
 Generate Code	生成代码
@@ -111,6 +136,7 @@ Computing	计算
 Analog	模拟
 Timers	定时器
 Software Packs	软件包
+Programmable logic array (PLAY)	可编程逻辑阵列（PLAY）
 Categories	类别
 Search	搜索
 Search Results	搜索结果
@@ -143,6 +169,7 @@ Open	打开
 Close	关闭
 Save	保存
 Download	下载
+Export	导出
 Update	更新
 Refresh	刷新
 Check for Updates	检查更新

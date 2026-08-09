@@ -4,7 +4,7 @@ TestResults/
 artifacts/*.png
 artifacts/*.xml
 artifacts/publish/
+artifacts/*-smoke/
 *.user
 *.suo
 .vs/
-

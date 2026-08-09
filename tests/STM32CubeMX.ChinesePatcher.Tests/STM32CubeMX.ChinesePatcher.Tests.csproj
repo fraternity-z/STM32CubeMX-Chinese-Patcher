@@ -26,4 +26,11 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\src\STM32CubeMX.ChinesePatcher\Resources\Payload\stm32cubemx-zh-agent.jar"
+                      LogicalName="STM32CubeMX.ChinesePatcher.Tests.Payload.stm32cubemx-zh-agent.jar" />
+    <EmbeddedResource Include="..\..\src\STM32CubeMX.ChinesePatcher\Resources\Payload\translations.tsv"
+                      LogicalName="STM32CubeMX.ChinesePatcher.Tests.Payload.translations.tsv" />
+  </ItemGroup>
+
 </Project>
