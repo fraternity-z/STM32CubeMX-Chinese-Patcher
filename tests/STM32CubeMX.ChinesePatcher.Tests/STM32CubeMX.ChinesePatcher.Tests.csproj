@@ -20,6 +20,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\STM32CubeMX.ChinesePatcher.Core\STM32CubeMX.ChinesePatcher.Core.csproj" />
+    <ProjectReference Include="..\..\src\STM32CubeMX.ChinesePatcher\STM32CubeMX.ChinesePatcher.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
   </ItemGroup>
 
   <ItemGroup>

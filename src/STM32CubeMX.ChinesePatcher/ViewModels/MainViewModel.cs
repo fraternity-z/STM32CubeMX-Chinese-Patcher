@@ -33,6 +33,7 @@ public sealed class MainViewModel : ObservableObject
     private string _statusAccent = "#1677A6";
     private bool _isBusy;
     private bool _isProgressVisible;
+    private bool _isWaitingForCubeMxExit;
     private int _progressValue;
     private string _progressText = string.Empty;
     private RunningState _runningState = RunningState.Unknown;
@@ -184,6 +185,11 @@ public sealed class MainViewModel : ObservableObject
 
     public bool CanBrowse => !IsBusy;
 
+    public bool NeedsRunningStateRefresh =>
+        !IsBusy
+        && _installation is not null
+        && _isWaitingForCubeMxExit;
+
     public bool IsProgressVisible
     {
         get => _isProgressVisible;
@@ -211,6 +217,59 @@ public sealed class MainViewModel : ObservableObject
     {
         _manualPath = path;
         await RefreshStatusAsync(useAutomaticDetection: false);
+    }
+
+    public async Task RefreshRunningStateAsync()
+    {
+        var installation = _installation;
+        if (IsBusy || installation is null)
+        {
+            return;
+        }
+
+        var refreshSequence = Volatile.Read(ref _refreshSequence);
+        var previousState = _runningState;
+        IsBusy = true;
+        try
+        {
+            var runningState = await Task.Run(() => _processStateService.GetState(installation));
+            if (refreshSequence != Volatile.Read(ref _refreshSequence)
+                || !ReferenceEquals(installation, _installation))
+            {
+                return;
+            }
+
+            _runningState = runningState;
+            _isWaitingForCubeMxExit = runningState switch
+            {
+                RunningState.Running => true,
+                RunningState.Stopped => false,
+                _ => _isWaitingForCubeMxExit
+            };
+            if (runningState != previousState)
+            {
+                UpdateDisplay();
+                if (previousState == RunningState.Running && runningState == RunningState.Stopped)
+                {
+                    AddLog("INFO", "已检测到 STM32CubeMX 关闭，可以继续操作。");
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            AppLog.Write("ERROR", exception.Message);
+            if (refreshSequence == Volatile.Read(ref _refreshSequence)
+                && ReferenceEquals(installation, _installation))
+            {
+                _runningState = RunningState.Unknown;
+                UpdateDisplay();
+                AddLog("ERROR", $"刷新运行状态失败：{exception.Message}");
+            }
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task RefreshAutomaticAsync()
@@ -254,6 +313,7 @@ public sealed class MainViewModel : ObservableObject
 
             _installation = installation;
             _runningState = status.Running;
+            _isWaitingForCubeMxExit = status.Running == RunningState.Running;
             _inspection = status.Inspection;
             UpdateDisplay();
             AddLog("INFO", $"已检测到 STM32CubeMX {installation.Version}。");
@@ -370,6 +430,11 @@ public sealed class MainViewModel : ObservableObject
             StatusMessage = "STM32CubeMX 正在运行，请关闭后再操作";
             StatusAccent = "#B42318";
         }
+        else if (_runningState == RunningState.Unknown)
+        {
+            StatusMessage = "无法确认 STM32CubeMX 的运行状态，请确认软件已关闭后重新检测";
+            StatusAccent = "#A96000";
+        }
         else if (_inspection.State == LocalizationState.Conflict)
         {
             StatusMessage = "发现来源不明的同名汉化文件，已停止覆盖";
@@ -394,6 +459,7 @@ public sealed class MainViewModel : ObservableObject
     {
         _installation = null;
         _runningState = RunningState.Unknown;
+        _isWaitingForCubeMxExit = false;
         _inspection = new PatchInspection(LocalizationState.NotInstalled, "尚未检测。", false, false);
         PathDisplay = "未检测到安装目录";
         DetectionSourceText = "请手动选择";

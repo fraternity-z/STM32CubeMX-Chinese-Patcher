@@ -64,7 +64,7 @@ dotnet build .\src\STM32CubeMX.ChinesePatcher\STM32CubeMX.ChinesePatcher.csproj 
 
 发布产物位于 `artifacts\publish\win-x64\STM32CubeMX-Chinese-Patcher.exe`。该文件为自包含单文件应用，目标电脑无需预装 .NET 运行库。
 
-推送与项目版本一致的稳定版标签（例如 `v1.0.0`）后，GitHub Actions 会自动运行测试、构建 `win-x64` 发布产物，并将 EXE 和 SHA-256 校验文件发布到对应的 GitHub Release。
+更新项目版本并推送到默认分支后，在 GitHub 的 Actions 页面选择 `Release`，点击 `Run workflow` 手动发布。工作流会读取项目版本并生成对应标签（例如 `v1.0.0`），随后运行测试、构建 `win-x64` 发布产物，并将 EXE 和 SHA-256 校验文件发布到对应的 GitHub Release。
 
 ## 项目结构
 

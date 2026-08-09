@@ -1,15 +1,13 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release
   cancel-in-progress: false
 
 jobs:
@@ -21,6 +19,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up .NET
@@ -28,20 +27,46 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Validate release tag
+      - name: Resolve release version
         shell: pwsh
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
-          if ($tag -notmatch '^v(?<version>(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*))$') {
-              throw "Release tag must use semantic version format, for example v1.0.0: $tag"
+          $expectedRef = "refs/heads/$env:DEFAULT_BRANCH"
+          if ($env:GITHUB_REF -cne $expectedRef) {
+              throw "Manual releases must run from the default branch '$env:DEFAULT_BRANCH', but received '$env:GITHUB_REF'."
           }
 
-          $tagVersion = $Matches['version']
           [xml]$project = Get-Content -LiteralPath 'src/STM32CubeMX.ChinesePatcher/STM32CubeMX.ChinesePatcher.csproj' -Raw
-          $projectVersion = $project.SelectSingleNode('/Project/PropertyGroup/Version').InnerText
-          if ($tagVersion -cne $projectVersion) {
-              throw "Release tag version '$tagVersion' does not match project version '$projectVersion'."
+          $versionNode = $project.SelectSingleNode('/Project/PropertyGroup/Version')
+          if ($null -eq $versionNode -or [string]::IsNullOrWhiteSpace($versionNode.InnerText)) {
+              throw 'Project version is missing from STM32CubeMX.ChinesePatcher.csproj.'
           }
+
+          $projectVersion = $versionNode.InnerText.Trim()
+          if ($projectVersion -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
+              throw "Project version must use stable semantic version format, for example 1.0.0: $projectVersion"
+          }
+
+          $tag = "v$projectVersion"
+          $matchingTags = @(git tag --list $tag)
+          if ($LASTEXITCODE -ne 0) {
+              throw "Unable to inspect release tag '$tag'."
+          }
+
+          $tagExists = $matchingTags -contains $tag
+          if ($tagExists) {
+              $tagCommit = (git rev-list -n 1 $tag).Trim()
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Unable to resolve release tag '$tag'."
+              }
+              if ($tagCommit -cne $env:GITHUB_SHA) {
+                  throw "Release tag '$tag' points to '$tagCommit', but this run uses '$env:GITHUB_SHA'. Update the project version before publishing a new commit."
+              }
+          }
+
+          "RELEASE_TAG=$tag" >> $env:GITHUB_ENV
+          "RELEASE_TAG_EXISTS=$($tagExists.ToString().ToLowerInvariant())" >> $env:GITHUB_ENV
 
       - name: Test and publish
         shell: pwsh
@@ -50,7 +75,7 @@ jobs:
       - name: Prepare release assets
         shell: pwsh
         run: |
-          $tag = $env:GITHUB_REF_NAME
+          $tag = $env:RELEASE_TAG
           $source = 'artifacts/publish/win-x64/STM32CubeMX-Chinese-Patcher.exe'
           $releaseDirectory = 'artifacts/release'
           $assetName = "STM32CubeMX-Chinese-Patcher-$tag-win-x64.exe"
@@ -68,7 +93,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
+          $tag = $env:RELEASE_TAG
           $asset = "artifacts/release/STM32CubeMX-Chinese-Patcher-$tag-win-x64.exe"
           $checksum = 'artifacts/release/SHA256SUMS.txt'
 
@@ -78,7 +103,26 @@ jobs:
               gh release upload $tag $asset $checksum --clobber --repo $env:GITHUB_REPOSITORY
           }
           else {
-              gh release create $tag $asset $checksum --verify-tag --generate-notes --title $tag --repo $env:GITHUB_REPOSITORY
+              $createArguments = @(
+                  'release'
+                  'create'
+                  $tag
+                  $asset
+                  $checksum
+                  '--generate-notes'
+                  '--title'
+                  $tag
+                  '--repo'
+                  $env:GITHUB_REPOSITORY
+              )
+              if ($env:RELEASE_TAG_EXISTS -eq 'true') {
+                  $createArguments += '--verify-tag'
+              }
+              else {
+                  $createArguments += @('--target', $env:GITHUB_SHA)
+              }
+
+              gh @createArguments
           }
 
           if ($LASTEXITCODE -ne 0) {
