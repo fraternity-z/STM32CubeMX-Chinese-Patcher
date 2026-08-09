@@ -2,6 +2,10 @@
 
 一个面向 Windows 的 STM32CubeMX 汉化补丁管理器。它把汉化 Java Agent 和翻译词典嵌入单个 EXE，支持自动检测安装目录、版本、运行状态和当前汉化状态，并提供手动目录选择、一键汉化和一键回退。
 
+## 写在前面
+
+本项目只是为了方便快速上手，做了一些简单的汉化；还是推荐多熟悉英文界面。
+
 ## 使用
 
 1. 运行 `STM32CubeMX-Chinese-Patcher.exe`。
@@ -59,6 +63,8 @@ dotnet build .\src\STM32CubeMX.ChinesePatcher\STM32CubeMX.ChinesePatcher.csproj 
 ```
 
 发布产物位于 `artifacts\publish\win-x64\STM32CubeMX-Chinese-Patcher.exe`。该文件为自包含单文件应用，目标电脑无需预装 .NET 运行库。
+
+推送与项目版本一致的稳定版标签（例如 `v1.0.0`）后，GitHub Actions 会自动运行测试、构建 `win-x64` 发布产物，并将 EXE 和 SHA-256 校验文件发布到对应的 GitHub Release。
 
 ## 项目结构
 

@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Validate release tag
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          if ($tag -notmatch '^v(?<version>(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*))$') {
+              throw "Release tag must use semantic version format, for example v1.0.0: $tag"
+          }
+
+          $tagVersion = $Matches['version']
+          [xml]$project = Get-Content -LiteralPath 'src/STM32CubeMX.ChinesePatcher/STM32CubeMX.ChinesePatcher.csproj' -Raw
+          $projectVersion = $project.SelectSingleNode('/Project/PropertyGroup/Version').InnerText
+          if ($tagVersion -cne $projectVersion) {
+              throw "Release tag version '$tagVersion' does not match project version '$projectVersion'."
+          }
+
+      - name: Test and publish
+        shell: pwsh
+        run: ./build.ps1 -Runtime win-x64
+
+      - name: Prepare release assets
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $source = 'artifacts/publish/win-x64/STM32CubeMX-Chinese-Patcher.exe'
+          $releaseDirectory = 'artifacts/release'
+          $assetName = "STM32CubeMX-Chinese-Patcher-$tag-win-x64.exe"
+          $asset = Join-Path $releaseDirectory $assetName
+          $checksum = Join-Path $releaseDirectory 'SHA256SUMS.txt'
+
+          New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
+          Copy-Item -LiteralPath $source -Destination $asset
+
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $asset).Hash.ToLowerInvariant()
+          "$hash  $assetName" | Set-Content -LiteralPath $checksum -Encoding utf8NoBOM
+
+      - name: Create or update GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $asset = "artifacts/release/STM32CubeMX-Chinese-Patcher-$tag-win-x64.exe"
+          $checksum = 'artifacts/release/SHA256SUMS.txt'
+
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) {
+              gh release upload $tag $asset $checksum --clobber --repo $env:GITHUB_REPOSITORY
+          }
+          else {
+              gh release create $tag $asset $checksum --verify-tag --generate-notes --title $tag --repo $env:GITHUB_REPOSITORY
+          }
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "GitHub Release operation failed with exit code $LASTEXITCODE."
+          }
