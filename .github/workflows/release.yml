@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -70,6 +72,7 @@ jobs:
           $asset = "artifacts/release/STM32CubeMX-Chinese-Patcher-$tag-win-x64.exe"
           $checksum = 'artifacts/release/SHA256SUMS.txt'
 
+          $PSNativeCommandUseErrorActionPreference = $false
           gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
           if ($LASTEXITCODE -eq 0) {
               gh release upload $tag $asset $checksum --clobber --repo $env:GITHUB_REPOSITORY
