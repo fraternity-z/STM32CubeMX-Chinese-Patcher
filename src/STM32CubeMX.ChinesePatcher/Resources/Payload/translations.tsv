@@ -71,9 +71,13 @@ Board Selector	开发板选择器
 Example Selector	示例选择器
 Cross Selector	交叉选择器
 MCU/MPU Filters	MCU/MPU 筛选器
+Board Filters	开发板筛选器
 Commercial Part Number	商用料号
 <html>Commercial<br>Part Number</html>	<html>商用<br>料号</html>
 PRODUCT INFO	产品信息
+Type	类型
+Supplier	供应商
+MCU / MPU Series	MCU / MPU 系列
 Segment	产品类别
 Series	系列
 Line	产品线
@@ -106,6 +110,26 @@ MIDDLEWARE	中间件
 PHYSICAL	物理特性
 Peripheral	外设
 Features	特性
+FEATURES	特性
+Embedded Sensor	板载传感器
+User Button	用户按钮
+Camera	摄像头
+Connector	连接器
+Memory Card	存储卡
+Display	显示
+Joystick	操纵杆
+Audio Line Input	音频线路输入
+Audio Line Output	音频线路输出
+Audio Processor	音频处理器
+Microphone	麦克风
+Potentiometer	电位器
+Power Supply	电源
+Speaker	扬声器
+Touch Feature	触摸功能
+USB Port	USB 端口
+Debug Connector	调试连接器
+Wireless Interface	无线接口
+Other on-board Feature	其他板载功能
 Block Diagram	框图
 CAD Resources	CAD 资源
 Datasheet	数据手册
