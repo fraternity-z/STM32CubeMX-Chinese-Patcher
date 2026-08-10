@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (for example, v1.0.1)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -27,28 +32,26 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Resolve release version
+      - name: Validate release tag
         shell: pwsh
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_TAG_INPUT: ${{ inputs.tag }}
         run: |
           $expectedRef = "refs/heads/$env:DEFAULT_BRANCH"
           if ($env:GITHUB_REF -cne $expectedRef) {
               throw "Manual releases must run from the default branch '$env:DEFAULT_BRANCH', but received '$env:GITHUB_REF'."
           }
 
-          [xml]$project = Get-Content -LiteralPath 'src/STM32CubeMX.ChinesePatcher/STM32CubeMX.ChinesePatcher.csproj' -Raw
-          $versionNode = $project.SelectSingleNode('/Project/PropertyGroup/Version')
-          if ($null -eq $versionNode -or [string]::IsNullOrWhiteSpace($versionNode.InnerText)) {
-              throw 'Project version is missing from STM32CubeMX.ChinesePatcher.csproj.'
+          if ([string]::IsNullOrWhiteSpace($env:RELEASE_TAG_INPUT)) {
+              throw 'Release tag is required.'
           }
 
-          $projectVersion = $versionNode.InnerText.Trim()
-          if ($projectVersion -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
-              throw "Project version must use stable semantic version format, for example 1.0.0: $projectVersion"
+          $tag = $env:RELEASE_TAG_INPUT.Trim()
+          if ($tag -notmatch '^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') {
+              throw "Release tag must use stable semantic version format, for example v1.0.1: $tag"
           }
 
-          $tag = "v$projectVersion"
           $matchingTags = @(git tag --list $tag)
           if ($LASTEXITCODE -ne 0) {
               throw "Unable to inspect release tag '$tag'."
@@ -61,7 +64,7 @@ jobs:
                   throw "Unable to resolve release tag '$tag'."
               }
               if ($tagCommit -cne $env:GITHUB_SHA) {
-                  throw "Release tag '$tag' points to '$tagCommit', but this run uses '$env:GITHUB_SHA'. Update the project version before publishing a new commit."
+                  throw "Release tag '$tag' points to '$tagCommit', but this run uses '$env:GITHUB_SHA'. Enter a new release tag."
               }
           }
 
