@@ -44,6 +44,16 @@ public sealed class PayloadResourceTests
             var majorVersion = (header[6] << 8) | header[7];
             Assert.AreEqual(65, majorVersion, $"{entry.FullName} 不是 Java 21 class。 ");
         }
+
+        var agentClassEntry = archive.GetEntry("com/codex/cubemx/zh/CubeMxZhAgent.class");
+        Assert.IsNotNull(agentClassEntry);
+        using var agentClassStream = agentClassEntry.Open();
+        using var agentClassBytes = new MemoryStream();
+        agentClassStream.CopyTo(agentClassBytes);
+        var agentClassConstants = Encoding.Latin1.GetString(agentClassBytes.ToArray());
+        StringAssert.Contains(agentClassConstants, "org.jdesktop.swingx.JXTaskPane");
+        StringAssert.Contains(agentClassConstants, "getTitle");
+        StringAssert.Contains(agentClassConstants, "setTitle");
     }
 
     [TestMethod]
@@ -81,6 +91,8 @@ public sealed class PayloadResourceTests
         Assert.AreEqual("比较工程", entries["Compare Projects"]);
         Assert.AreEqual("仅显示差异", entries["Show differences only"]);
         Assert.AreEqual("可编程逻辑阵列（PLAY）", entries["Programmable logic array (PLAY)"]);
+        Assert.AreEqual("管理嵌入式软件包", entries["Manage embedded software packages"]);
+        Assert.AreEqual("连接与更新", entries["Connection & Updates"]);
 
         var selectorLabels = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -90,6 +102,7 @@ public sealed class PayloadResourceTests
             ["Cross Selector"] = "交叉选择器",
             ["MCU/MPU Filters"] = "MCU/MPU 筛选器",
             ["Commercial Part Number"] = "商用料号",
+            ["<html>Commercial<br>Part Number</html>"] = "<html>商用<br>料号</html>",
             ["PRODUCT INFO"] = "产品信息",
             ["Segment"] = "产品类别",
             ["Series"] = "系列",
@@ -97,6 +110,31 @@ public sealed class PayloadResourceTests
             ["Marketing Status"] = "市场状态",
             ["Price"] = "价格",
             ["Package"] = "封装",
+            ["Core"] = "内核",
+            ["Coprocessor"] = "协处理器",
+            ["MEMORY"] = "存储器",
+            ["DRAM Support"] = "DRAM 支持",
+            ["Flash Support"] = "Flash 支持",
+            ["Dual Bank Flash"] = "双 Bank Flash",
+            ["TIMER"] = "定时器",
+            ["Timer Function"] = "定时器功能",
+            ["ANALOG"] = "模拟",
+            ["COMMUNICATION INTERFACE"] = "通信接口",
+            ["USB INTERFACE"] = "USB 接口",
+            ["EXTERNAL MEMORY INTERFACE"] = "外部存储器接口",
+            ["External Memory Interface"] = "外部存储器接口",
+            ["OTHER INTERFACE"] = "其他接口",
+            ["Additional Interface"] = "附加接口",
+            ["GRAPHICS"] = "图形",
+            ["Display Controller"] = "显示控制器",
+            ["Graphic Accelerator"] = "图形加速器",
+            ["SECURITY"] = "安全",
+            ["Cryptography"] = "加密",
+            ["Security Function"] = "安全功能",
+            ["OTHER PERIPHERAL"] = "其他外设",
+            ["MIDDLEWARE"] = "中间件",
+            ["PHYSICAL"] = "物理特性",
+            ["Peripheral"] = "外设",
             ["Features"] = "特性",
             ["Block Diagram"] = "框图",
             ["CAD Resources"] = "CAD 资源",
@@ -115,6 +153,7 @@ public sealed class PayloadResourceTests
         var protectedTerms = new[]
         {
             "Flash", "RAM", "SRAM", "EEPROM", "MCU", "MPU", "GPIO", "NVIC", "DMA", "I/O", "CAD", "PDF", "TXT", "PLAY",
+            "FPU", "ITCM", "DTCM", "DRAM", "USB", "IPCC", "SMPS", "SDMMC",
         };
         foreach (var (source, translation) in entries)
         {

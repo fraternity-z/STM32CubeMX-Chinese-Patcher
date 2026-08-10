@@ -40,6 +40,8 @@ ACCESS TO COMPARE PROJECTS	比较工程
 Check for STM32CubeMX and embedded software packages updates	检查 STM32CubeMX 和嵌入式软件包更新
 CHECK FOR UPDATES	检查更新
 Install or remove embedded software packages	安装或移除嵌入式软件包
+Manage embedded software packages	管理嵌入式软件包
+Connection & Updates	连接与更新
 INSTALL / REMOVE	安装 / 移除
 <html><a><u>Data collection information notice</u></a></html>	<html><a><u>数据收集信息声明</u></a></html>
 About STM32	关于 STM32
@@ -70,6 +72,7 @@ Example Selector	示例选择器
 Cross Selector	交叉选择器
 MCU/MPU Filters	MCU/MPU 筛选器
 Commercial Part Number	商用料号
+<html>Commercial<br>Part Number</html>	<html>商用<br>料号</html>
 PRODUCT INFO	产品信息
 Segment	产品类别
 Series	系列
@@ -77,6 +80,31 @@ Line	产品线
 Marketing Status	市场状态
 Price	价格
 Package	封装
+Core	内核
+Coprocessor	协处理器
+MEMORY	存储器
+DRAM Support	DRAM 支持
+Flash Support	Flash 支持
+Dual Bank Flash	双 Bank Flash
+TIMER	定时器
+Timer Function	定时器功能
+ANALOG	模拟
+COMMUNICATION INTERFACE	通信接口
+USB INTERFACE	USB 接口
+EXTERNAL MEMORY INTERFACE	外部存储器接口
+External Memory Interface	外部存储器接口
+OTHER INTERFACE	其他接口
+Additional Interface	附加接口
+GRAPHICS	图形
+Display Controller	显示控制器
+Graphic Accelerator	图形加速器
+SECURITY	安全
+Cryptography	加密
+Security Function	安全功能
+OTHER PERIPHERAL	其他外设
+MIDDLEWARE	中间件
+PHYSICAL	物理特性
+Peripheral	外设
 Features	特性
 Block Diagram	框图
 CAD Resources	CAD 资源

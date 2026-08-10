@@ -1,0 +1,70 @@
+{
+  "iteration": 1,
+  "timestamp": "2026-08-10T12:20:00+08:00",
+  "hypotheses": [
+    {
+      "id": "H1",
+      "description": "筛选标签由当前扫描器未覆盖的自定义组件直接持有",
+      "testable_condition": "记录目标英文所在组件的实际类名及可用文本访问器",
+      "logging_point": "SwingTranslator.translateComponent",
+      "evidence_criteria": {
+        "confirm": "目标文本出现在非 JLabel/AbstractButton 的自定义组件 getter 中",
+        "reject": "目标文本只出现在已支持的标准组件中"
+      },
+      "likelihood": 1,
+      "status": "confirmed",
+      "verdict_reason": "McuFilterPanel 字节码对全部目标标题调用 JXTaskPane.setTitle，当前 SwingTranslator 没有 JXTaskPane 分支"
+    },
+    {
+      "id": "H2",
+      "description": "目标文本位于组件模型、客户端属性或 renderer 中",
+      "testable_condition": "记录组件客户端属性、模型和 renderer 返回的目标文本",
+      "logging_point": "SwingTranslator.translateComponent",
+      "evidence_criteria": {
+        "confirm": "组件自身无目标文本，但其模型、客户端属性或 renderer 包含目标文本",
+        "reject": "目标文本由组件公开 getter 直接返回"
+      },
+      "likelihood": 2,
+      "status": "rejected",
+      "verdict_reason": "JXTaskPane 通过公开 getTitle/setTitle 直接持有目标文本"
+    },
+    {
+      "id": "H3",
+      "description": "运行时字符串包含换行、HTML 或其他包装，精确键未命中",
+      "testable_condition": "记录与词典键近似的原始文本及转义表示",
+      "logging_point": "TranslationDictionary.translate",
+      "evidence_criteria": {
+        "confirm": "原始值与词典键仅因包装字符不同",
+        "reject": "原始值与词典键完全一致"
+      },
+      "likelihood": 3,
+      "status": "confirmed",
+      "verdict_reason": "McuSearchPNPanel 将实际 JLabel 文本构造成 <html>Commercial<br>Part Number</html>"
+    },
+    {
+      "id": "H4",
+      "description": "CubeMX 加载了旧词典",
+      "testable_condition": "对比 Agent 启动日志的词条数量与当前词典",
+      "logging_point": "CubeMxZhAgent.premain",
+      "evidence_criteria": {
+        "confirm": "启动日志词条数少于 218",
+        "reject": "启动日志词条数为 218"
+      },
+      "likelihood": 4,
+      "status": "rejected",
+      "verdict_reason": "最新 Agent 日志明确记录 dictionary entries=218"
+    }
+  ],
+  "resolution": {
+    "status": "fixed",
+    "root_cause": "Agent 遗漏 JXTaskPane.title，且料号标签实际为 HTML 文本",
+    "verification": [
+      "TASK_PANE_PASS",
+      "HTML_LABEL_PASS",
+      "REAL_TASK_PANE_PASS",
+      "REAL_HTML_LABEL_PASS",
+      "90/90 tests passed",
+      "STM32CubeMX 6.18.1-RC2 compatibility passed"
+    ]
+  }
+}
