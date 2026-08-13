@@ -23,7 +23,7 @@ public sealed class PayloadResourceTests
         using (var reader = new StreamReader(manifestEntry.Open(), Encoding.UTF8))
         {
             var manifest = reader.ReadToEnd();
-            StringAssert.Contains(manifest, "Premain-Class: com.codex.cubemx.zh.CubeMxZhAgent");
+            StringAssert.Contains(manifest, "Premain-Class: com.codex.cubemx.zh.CubeMxZhCompatibilityAgent");
             StringAssert.Contains(manifest, "Can-Redefine-Classes: false");
             StringAssert.Contains(manifest, "Can-Retransform-Classes: false");
         }
@@ -54,6 +54,25 @@ public sealed class PayloadResourceTests
         StringAssert.Contains(agentClassConstants, "org.jdesktop.swingx.JXTaskPane");
         StringAssert.Contains(agentClassConstants, "getTitle");
         StringAssert.Contains(agentClassConstants, "setTitle");
+
+        var compatibilityClassEntry = archive.GetEntry("com/codex/cubemx/zh/PluginTabCompatibility.class");
+        Assert.IsNotNull(compatibilityClassEntry);
+        using var compatibilityClassStream = compatibilityClassEntry.Open();
+        using var compatibilityClassBytes = new MemoryStream();
+        compatibilityClassStream.CopyTo(compatibilityClassBytes);
+        var compatibilityClassConstants = Encoding.Latin1.GetString(compatibilityClassBytes.ToArray());
+        StringAssert.Contains(compatibilityClassConstants, "com.st.microxplorer.maingui.MainPanel");
+        StringAssert.Contains(compatibilityClassConstants, "com.st.microxplorer.plugin.PluginManage");
+        StringAssert.Contains(compatibilityClassConstants, "OriginalPluginNameLabel");
+
+        var originalNameLabelClassEntry = archive.GetEntry(
+            "com/codex/cubemx/zh/PluginTabCompatibility$OriginalPluginNameLabel.class");
+        Assert.IsNotNull(originalNameLabelClassEntry);
+        using var originalNameLabelClassStream = originalNameLabelClassEntry.Open();
+        using var originalNameLabelClassBytes = new MemoryStream();
+        originalNameLabelClassStream.CopyTo(originalNameLabelClassBytes);
+        var originalNameLabelClassConstants = Encoding.Latin1.GetString(originalNameLabelClassBytes.ToArray());
+        StringAssert.Contains(originalNameLabelClassConstants, "getSelectedPluginView");
     }
 
     [TestMethod]
@@ -172,6 +191,61 @@ public sealed class PayloadResourceTests
         foreach (var (source, translation) in selectorLabels)
         {
             Assert.AreEqual(translation, entries[source], $"选择器界面词条不正确：{source}");
+        }
+
+        var codeGenerationLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Project Name"] = "工程名称",
+            ["Project Location"] = "工程位置",
+            ["Application Structure"] = "应用结构",
+            ["Do not generate the main()"] = "不生成 main()",
+            ["Toolchain Folder Location"] = "工具链文件夹位置",
+            ["Toolchain / IDE"] = "工具链 / IDE",
+            ["Min Version"] = "最低版本",
+            ["Generate Under Root"] = "在根目录下生成",
+            ["Linker Settings"] = "链接器设置",
+            ["Minimum Heap Size"] = "最小堆大小",
+            ["Minimum Stack Size"] = "最小栈大小",
+            ["Thread-safe Settings"] = "线程安全设置",
+            ["Enable multi-threaded support"] = "启用多线程支持",
+            ["Thread-safe Locking Strategy"] = "线程安全锁策略",
+            ["Mcu and Firmware Package"] = "MCU 与固件包",
+            ["Mcu Reference"] = "MCU 参考型号",
+            ["Firmware Package Name and Version"] = "固件包名称和版本",
+            ["Use latest available version"] = "使用最新可用版本",
+            ["Use Default Firmware Location"] = "使用默认固件位置",
+            ["Firmware Relative Path"] = "固件相对路径",
+            ["STM32Cube MCU packages and embedded software packs"] = "STM32Cube MCU 软件包和嵌入式软件包",
+            ["Copy all used libraries into the project folder"] = "将所有使用的库复制到工程文件夹",
+            ["Copy only the necessary library files"] = "仅复制必要的库文件",
+            ["Add necessary library files as reference in the toolchain project configuration file"] = "在工具链工程配置文件中引用必要的库文件",
+            ["Generated files"] = "生成的文件",
+            ["Generate peripheral initialization as a pair of '.c/.h' files per peripheral"] = "为每个外设生成一对“.c/.h”初始化文件",
+            ["Backup previously generated files when re-generating"] = "重新生成时备份之前生成的文件",
+            ["Keep User Code when re-generating"] = "重新生成时保留用户代码",
+            ["Delete previously generated files when not re-generated"] = "删除未重新生成的旧文件",
+            ["HAL Settings"] = "HAL 设置",
+            ["Set all free pins as analog (to optimize the power consumption)"] = "将所有空闲引脚设置为模拟模式（以优化功耗）",
+            ["Enable Full Assert"] = "启用完整断言",
+            ["User Actions"] = "用户操作",
+            ["Before Code Generation"] = "代码生成前",
+            ["After Code Generation"] = "代码生成后",
+            ["Template Settings"] = "模板设置",
+            ["Select a template to generate customized code"] = "选择模板以生成自定义代码",
+            ["Settings..."] = "设置...",
+            ["Driver Selector"] = "驱动选择器",
+            ["Search (Ctrl+F)"] = "搜索（Ctrl+F）",
+            ["Register CallBack"] = "注册回调",
+            ["Generated Function Calls"] = "生成的函数调用",
+            ["Rank"] = "顺序",
+            ["Function Name"] = "函数名称",
+            ["Peripheral Instance"] = "外设实例",
+            ["Do Not Generate Function Call"] = "不生成函数调用",
+            ["Visibility (Static)"] = "可见性（Static）",
+        };
+        foreach (var (source, translation) in codeGenerationLabels)
+        {
+            Assert.AreEqual(translation, entries[source], $"代码生成界面词条不正确：{source}");
         }
 
         var protectedTerms = new[]
