@@ -22,6 +22,40 @@
             <Setter Property="Padding" Value="18" />
             <Setter Property="MinHeight" Value="122" />
         </Style>
+        <Style x:Key="HeaderMenuButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="#164F7D" />
+            <Setter Property="BorderBrush" Value="#477BA2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#20638F" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#6AA7C9" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#0F416B" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Background="{StaticResource CanvasBrush}">
@@ -55,17 +89,69 @@
                                Foreground="#B9D7E8"
                                Text="本机补丁管理" />
                 </StackPanel>
-                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                    <TextBlock HorizontalAlignment="Right"
-                               FontSize="12"
-                               Foreground="#B9D7E8"
-                               Text="PATCHER" />
-                    <TextBlock Margin="0,3,0,0"
-                               HorizontalAlignment="Right"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Foreground="White"
-                               Text="{Binding AppVersion, StringFormat=v{0}}" />
+                <StackPanel Grid.Column="2"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal">
+                    <Button x:Name="AboutButton"
+                            Margin="0,0,20,0"
+                            AutomationProperties.Name="关于"
+                            Style="{StaticResource HeaderMenuButtonStyle}"
+                            ToolTip="打开关于菜单"
+                            Click="AboutButton_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="AboutMenu"
+                                         MinWidth="176"
+                                         Padding="4"
+                                         Background="White"
+                                         BorderBrush="{StaticResource LineBrush}"
+                                         BorderThickness="1"
+                                         HasDropShadow="True">
+                                <ContextMenu.Resources>
+                                    <Style TargetType="MenuItem">
+                                        <Setter Property="Padding" Value="10,8" />
+                                        <Setter Property="FontSize" Value="13" />
+                                        <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+                                    </Style>
+                                </ContextMenu.Resources>
+                                <MenuItem Header="关于本软件" Click="AboutMenuItem_Click">
+                                    <MenuItem.Icon>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE946;" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="检查更新" Click="CheckUpdatesMenuItem_Click">
+                                    <MenuItem.Icon>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE895;" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0,0,7,0"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="15"
+                                       Text="&#xE946;" />
+                            <TextBlock VerticalAlignment="Center" Text="关于" />
+                            <TextBlock Margin="8,0,0,0"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="10"
+                                       Text="&#xE70D;" />
+                        </StackPanel>
+                    </Button>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock HorizontalAlignment="Right"
+                                   FontSize="12"
+                                   Foreground="#B9D7E8"
+                                   Text="PATCHER" />
+                        <TextBlock Margin="0,3,0,0"
+                                   HorizontalAlignment="Right"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"
+                                   Text="{Binding AppVersion, StringFormat=v{0}}" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>

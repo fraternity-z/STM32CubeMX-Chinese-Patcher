@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param(
     [ValidateSet('win-x64', 'win-arm64')]
-    [string]$Runtime = 'win-x64'
+    [string]$Runtime = 'win-x64',
+
+    [ValidatePattern('^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$')]
+    [string]$ReleaseVersion
 )
 
 Set-StrictMode -Version Latest
@@ -27,7 +30,22 @@ if (Test-Path -LiteralPath $publishRoot) {
     Remove-Item -LiteralPath $publishRoot -Recurse -Force
 }
 
-dotnet publish $appProject -c Release -r $Runtime --self-contained true -o $publishRoot
+$publishArguments = @(
+    $appProject
+    '-c'
+    'Release'
+    '-r'
+    $Runtime
+    '--self-contained'
+    'true'
+    '-o'
+    $publishRoot
+)
+if (-not [string]::IsNullOrWhiteSpace($ReleaseVersion)) {
+    $publishArguments += "-p:Version=$ReleaseVersion"
+}
+
+dotnet publish @publishArguments
 if ($LASTEXITCODE -ne 0) {
     throw "发布失败，退出码：$LASTEXITCODE"
 }

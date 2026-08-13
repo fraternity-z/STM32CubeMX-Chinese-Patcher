@@ -19,6 +19,8 @@ STM32CubeMX 中文汉化补丁（STM32CubeMX Chinese Patcher）是一款面向 W
 - 根据受管启动项、状态文件和载荷哈希识别汉化归属，检测到冲突时拒绝覆盖。
 - 写入前检查并发修改，失败时按当前文件状态执行有条件回滚。
 - GitHub Release 提供自包含的单文件 EXE 和 `SHA256SUMS.txt`，目标电脑无需预装 .NET 运行库。
+- 启动后在后台静默检查 GitHub Release；发现新版本时可查看更新说明、校验信息并直接下载运行。
+- 标题栏“关于”菜单提供手动检查更新入口，显示检查进度、最新版本与更新说明，网络或服务器异常时可重试。
 
 ## 兼容性
 
@@ -56,6 +58,8 @@ $actual -eq $expected
 回退仅移除本工具管理的 `-javaagent:` 启动项，不会用旧备份覆盖整个 `STM32CubeMX.l4j.ini`。汉化载荷和首次配置备份会保留，便于检查和再次启用。
 
 操作日志位于 `%LOCALAPPDATA%\STM32CubeMX-Chinese-Patcher\logs\app.log`，可用于定位安装检测、权限或文件冲突问题。
+
+自动更新包下载到 `%LOCALAPPDATA%\STM32CubeMX-Chinese-Patcher\updates`。下载过程可取消，程序会根据同一 Release 中的 `SHA256SUMS.txt` 校验 SHA-256；校验失败的临时文件会自动删除。检查失败时仅记录日志，不影响主界面启动；也可通过标题栏“关于”菜单打开关于窗口后重试。
 
 ## 自动检测顺序
 
@@ -110,11 +114,11 @@ artifacts\publish\win-x64\STM32CubeMX-Chinese-Patcher.exe
 
 ## 发布流程
 
-1. 确认默认分支已包含待发布代码，并同步更新项目版本和发布说明。
+1. 确认默认分支已包含待发布代码，并准备好发布说明。
 2. 在 GitHub 的 Actions 页面选择 `Release`，点击 `Run workflow`。
 3. 输入稳定语义化版本标签，例如 `v1.0.1`。
 
-工作流会验证分支和标签格式，运行测试并构建 `win-x64` 发布产物，然后创建或更新对应的 GitHub Release，上传带版本号的 EXE 与 `SHA256SUMS.txt`。
+工作流会验证分支和标签格式，将标签版本写入发布产物，运行测试并构建 `win-x64` 单文件程序，然后创建或更新对应的 GitHub Release，上传带版本号的 EXE 与 `SHA256SUMS.txt`。
 
 ## 项目结构
 

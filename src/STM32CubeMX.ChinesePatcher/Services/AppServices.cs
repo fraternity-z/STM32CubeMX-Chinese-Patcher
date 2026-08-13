@@ -2,7 +2,7 @@ using STM32CubeMX.ChinesePatcher.Core.Services;
 
 namespace STM32CubeMX.ChinesePatcher.Services;
 
-public sealed class AppServices
+public sealed class AppServices : IDisposable
 {
     public AppServices()
     {
@@ -19,6 +19,7 @@ public sealed class AppServices
             StateInspector,
             new SystemClock());
         OperationCoordinator = new OperationCoordinator(PatchService);
+        UpdateService = new GitHubUpdateService(new UpdateOptions());
     }
 
     public EmbeddedPayloadProvider PayloadProvider { get; }
@@ -32,4 +33,14 @@ public sealed class AppServices
     public PatchService PatchService { get; }
 
     public OperationCoordinator OperationCoordinator { get; }
+
+    public IUpdateService UpdateService { get; }
+
+    public void Dispose()
+    {
+        if (UpdateService is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
 }

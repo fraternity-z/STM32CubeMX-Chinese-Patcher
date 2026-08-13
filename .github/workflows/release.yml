@@ -73,7 +73,9 @@ jobs:
 
       - name: Test and publish
         shell: pwsh
-        run: ./build.ps1 -Runtime win-x64
+        run: |
+          $version = $env:RELEASE_TAG.Substring(1)
+          ./build.ps1 -Runtime win-x64 -ReleaseVersion $version
 
       - name: Prepare release assets
         shell: pwsh
