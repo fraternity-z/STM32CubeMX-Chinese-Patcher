@@ -45,6 +45,7 @@ final class PluginTabCompatibility {
 
     private static void scan(TranslationDictionary dictionary) {
         try {
+            SelectorTextCompatibility.translateAllWindows(dictionary);
             var pluginNames = loadPluginNames();
             if (pluginNames.isEmpty()) {
                 return;

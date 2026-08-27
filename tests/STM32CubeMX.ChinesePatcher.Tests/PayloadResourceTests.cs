@@ -65,6 +65,18 @@ public sealed class PayloadResourceTests
         StringAssert.Contains(compatibilityClassConstants, "com.st.microxplorer.plugin.PluginManage");
         StringAssert.Contains(compatibilityClassConstants, "OriginalPluginNameLabel");
 
+        var selectorCompatibilityClassEntry = archive.GetEntry(
+            "com/codex/cubemx/zh/SelectorTextCompatibility.class");
+        Assert.IsNotNull(selectorCompatibilityClassEntry);
+        using var selectorCompatibilityClassStream = selectorCompatibilityClassEntry.Open();
+        using var selectorCompatibilityClassBytes = new MemoryStream();
+        selectorCompatibilityClassStream.CopyTo(selectorCompatibilityClassBytes);
+        var selectorCompatibilityClassConstants = Encoding.Latin1.GetString(
+            selectorCompatibilityClassBytes.ToArray());
+        StringAssert.Contains(selectorCompatibilityClassConstants, "Examples List:");
+        StringAssert.Contains(selectorCompatibilityClassConstants, "Matching ST candidates");
+        StringAssert.Contains(selectorCompatibilityClassConstants, "TranslatingComboBoxRenderer");
+
         var originalNameLabelClassEntry = archive.GetEntry(
             "com/codex/cubemx/zh/PluginTabCompatibility$OriginalPluginNameLabel.class");
         Assert.IsNotNull(originalNameLabelClassEntry);
@@ -193,6 +205,46 @@ public sealed class PayloadResourceTests
             Assert.AreEqual(translation, entries[source], $"选择器界面词条不正确：{source}");
         }
 
+        var exampleSelectorLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Example Filters"] = "示例筛选器",
+            ["Keyword"] = "关键字",
+            ["Vendor"] = "厂商",
+            ["Project Type"] = "工程类型",
+            ["Based on Driver"] = "基于驱动",
+            ["Middleware"] = "中间件",
+            ["MCU/MPU Library"] = "MCU/MPU 库",
+            ["Board Support Package Library"] = "开发板支持包库",
+            ["BSP Library"] = "BSP 库",
+            ["Board Type"] = "开发板类型",
+            ["STM32CubeMX Compatible"] = "STM32CubeMX 兼容性",
+            ["STM32CubeMX Version"] = "STM32CubeMX 版本",
+            ["SW Package Installed"] = "SW 软件包已安装",
+            ["Examples List: {count} item"] = "示例列表：{count} 项",
+            ["Examples List: {count} items"] = "示例列表：{count} 项",
+            ["Examples List: {count} item (No Match)"] = "示例列表：{count} 项（无匹配）",
+        };
+        foreach (var (source, translation) in exampleSelectorLabels)
+        {
+            Assert.AreEqual(translation, entries[source], $"示例选择器词条不正确：{source}");
+        }
+
+        var crossSelectorLabels = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Filters"] = "筛选器",
+            ["Part Number Search:"] = "料号搜索：",
+            ["-- All vendors --"] = "-- 所有厂商 --",
+            ["Matching ST candidates"] = "匹配的 ST 候选型号",
+            ["Matching ST candidates ({count})"] = "匹配的 ST 候选型号（{count}）",
+            ["Select your MCU using the pick-lists on the left (you can filter by vendor)"] = "请使用左侧选择列表选择 MCU（可按厂商筛选）",
+            ["Note:"] = "注意：",
+            ["The information presented in this cross-reference tool is intended to help you narrow your search of ST products based on similarity to other available products. The information is based on data published by other semiconductor manufacturers and might contain errors. ST provides the information “as is” and does not make any representations or warranties as to its accuracy or suitability for any particular purpose. ST recommends that you make your purchase decision based on your review of ST’s datasheets and other product documentation. Any pricing information is an estimate for budgetary purposes only."] = "本交叉参考工具提供的信息旨在根据与其他现有产品的相似性，帮助您缩小 ST 产品的搜索范围。相关信息基于其他半导体制造商发布的数据，可能存在错误。ST 按“现状”提供这些信息，不对其准确性或对任何特定用途的适用性作任何声明或保证。ST 建议您在审阅 ST 的数据手册和其他产品文档后再作出购买决定。任何价格信息均仅为预算用途的估算值。",
+        };
+        foreach (var (source, translation) in crossSelectorLabels)
+        {
+            Assert.AreEqual(translation, entries[source], $"交叉选择器词条不正确：{source}");
+        }
+
         var codeGenerationLabels = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["Project Name"] = "工程名称",
@@ -251,7 +303,7 @@ public sealed class PayloadResourceTests
         var protectedTerms = new[]
         {
             "Flash", "RAM", "SRAM", "EEPROM", "MCU", "MPU", "GPIO", "NVIC", "DMA", "I/O", "CAD", "PDF", "TXT", "PLAY",
-            "FPU", "ITCM", "DTCM", "DRAM", "USB", "IPCC", "SMPS", "SDMMC",
+            "FPU", "ITCM", "DTCM", "DRAM", "USB", "IPCC", "SMPS", "SDMMC", "BSP", "SW", "ST",
         };
         foreach (var (source, translation) in entries)
         {
