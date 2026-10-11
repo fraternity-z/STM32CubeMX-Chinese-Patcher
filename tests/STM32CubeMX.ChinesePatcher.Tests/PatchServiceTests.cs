@@ -13,6 +13,65 @@ public sealed class PatchServiceTests
     private readonly FakePayloadProvider _payloadProvider = new();
 
     [TestMethod]
+    [DataRow(@"C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeMX")]
+    [DataRow(@"C:\开发工具\STM32 CubeMX")]
+    [DataRow(@"C:\STM32CubeMX")]
+    public void AgentLine_QuotesJarPathWithoutDuplicatingDictionaryPath(string rootPath)
+    {
+        Assert.AreEqual(
+            $"-javaagent:\"{PatcherPaths.AgentPath(rootPath)}\"",
+            PatcherPaths.AgentLine(rootPath));
+    }
+
+    [TestMethod]
+    public void Apply_UpgradesLegacyStartupLineWithoutDuplicatingAgent()
+    {
+        using var install = new TempCubeMxFixture(pathSuffix: " Program Files 中文");
+        var legacyLine = $"-javaagent:{PatcherPaths.AgentPath(install.RootPath)}={PatcherPaths.DictionaryPath(install.RootPath)}";
+        File.AppendAllText(install.IniPath, legacyLine + Environment.NewLine, new UTF8Encoding(false));
+        var originalIni = File.ReadAllBytes(install.IniPath);
+        var expectedLine = $"-javaagent:\"{PatcherPaths.AgentPath(install.RootPath)}\"";
+        var service = CreateService(StoppedProcesses());
+
+        service.Apply(install.Installation());
+        service.Apply(install.Installation());
+
+        var lines = File.ReadAllLines(install.IniPath);
+        CollectionAssert.Contains(lines, expectedLine);
+        CollectionAssert.DoesNotContain(lines, legacyLine);
+        Assert.AreEqual(1, lines.Count(line => line.StartsWith("-javaagent:", StringComparison.Ordinal)));
+        CollectionAssert.Contains(lines, "-Dfile.encoding=UTF8");
+        CollectionAssert.AreEqual(originalIni, File.ReadAllBytes(PatcherPaths.BackupPath(install.RootPath)));
+        using var state = JsonDocument.Parse(File.ReadAllText(PatcherPaths.StatePath(install.RootPath)));
+        Assert.AreEqual(expectedLine, state.RootElement.GetProperty("agentLine").GetString());
+        Assert.AreEqual(LocalizationState.Installed, new PatchStateInspector(_payloadProvider).Inspect(install.Installation()).State);
+    }
+
+    [TestMethod]
+    public void Rollback_RemovesLegacyAndQuotedLinesButPreservesUnrelatedOptions()
+    {
+        using var install = new TempCubeMxFixture(pathSuffix: " Program Files 中文");
+        var agentPath = PatcherPaths.AgentPath(install.RootPath);
+        var dictionaryPath = PatcherPaths.DictionaryPath(install.RootPath);
+        const string foreignLine = "-javaagent:\"C:\\Other\\agent.jar\"=\"C:\\Other\\dictionary.tsv\"";
+        File.AppendAllLines(install.IniPath,
+            [
+                $"-javaagent:{agentPath}={dictionaryPath}",
+                $"-javaagent:\"{agentPath}\"=\"{dictionaryPath}\"",
+                $"-javaagent:\"{agentPath}\"",
+                foreignLine
+            ],
+            new UTF8Encoding(false));
+
+        var result = CreateService(StoppedProcesses()).Rollback(install.Installation());
+
+        Assert.IsTrue(result.Succeeded);
+        CollectionAssert.AreEqual(
+            new[] { "-Dfile.encoding=UTF8", foreignLine },
+            File.ReadAllLines(install.IniPath));
+    }
+
+    [TestMethod]
     public void Apply_WritesPayloadBackupStateAndSingleManagedLine()
     {
         using var install = new TempCubeMxFixture("-Dfile.encoding=UTF8\n-Xmx1024m\n");

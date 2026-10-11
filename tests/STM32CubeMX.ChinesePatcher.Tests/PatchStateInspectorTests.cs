@@ -39,6 +39,43 @@ public sealed class PatchStateInspectorTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Inspect_ReturnsNeedsUpdateForLegacyStartupLineWithMatchingPayload(bool quoted)
+    {
+        using var install = new TempCubeMxFixture(pathSuffix: " Program Files 中文");
+        install.WriteExpectedPayload(_payloadProvider);
+        var agentPath = PatcherPaths.AgentPath(install.RootPath);
+        var dictionaryPath = PatcherPaths.DictionaryPath(install.RootPath);
+        var legacyLine = quoted
+            ? $"-javaagent:\"{agentPath}\"=\"{dictionaryPath}\""
+            : $"-javaagent:{agentPath}={dictionaryPath}";
+        File.AppendAllText(install.IniPath, legacyLine + Environment.NewLine);
+
+        var result = CreateInspector().Inspect(install.Installation());
+
+        Assert.AreEqual(LocalizationState.NeedsUpdate, result.State);
+        Assert.IsTrue(result.HasManagedIniLine);
+        Assert.IsTrue(result.PayloadMatches);
+        StringAssert.Contains(result.Message, "启动配置");
+    }
+
+    [TestMethod]
+    [DataRow(@"C:\Program Files\STMicroelectronics\STM32Cube\STM32CubeMX")]
+    [DataRow(@"C:\开发工具\STM32 CubeMX")]
+    public void IsManagedAgentLine_MatchesLegacyAndQuotedFormats(string rootPath)
+    {
+        var agentPath = PatcherPaths.AgentPath(rootPath);
+        var dictionaryPath = PatcherPaths.DictionaryPath(rootPath);
+
+        Assert.IsTrue(PatchStateInspector.IsManagedAgentLine($"-javaagent:\"{agentPath}\"", rootPath));
+        Assert.IsTrue(PatchStateInspector.IsManagedAgentLine($"-javaagent:{agentPath}={dictionaryPath}", rootPath));
+        Assert.IsTrue(PatchStateInspector.IsManagedAgentLine($"-javaagent:\"{agentPath}\"=\"{dictionaryPath}\"", rootPath));
+        Assert.IsFalse(PatchStateInspector.IsManagedAgentLine($"-javaagent:\"{agentPath}\"=\"C:\\Other\\translations.tsv\"", rootPath));
+        Assert.IsFalse(PatchStateInspector.IsManagedAgentLine($"-javaagent:\"{agentPath}\"=\"{dictionaryPath}\" -Xmx1024m", rootPath));
+    }
+
+    [TestMethod]
     public void Inspect_ReturnsNotInstalledForRetainedMatchingPayload()
     {
         using var install = new TempCubeMxFixture();
@@ -106,9 +143,11 @@ public sealed class PatchStateInspectorTests
     }
 
     [TestMethod]
-    public void Inspect_ReturnsNeedsUpdateForLegacyOwnedState()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Inspect_ReturnsNeedsUpdateForLegacyOwnedState(bool legacyStartupFormat)
     {
-        using var install = new TempCubeMxFixture();
+        using var install = new TempCubeMxFixture(pathSuffix: " Program Files 中文");
         Directory.CreateDirectory(PatcherPaths.LocalizationDirectory(install.RootPath));
         var legacyAgent = new byte[] { 1, 2, 3 };
         var legacyDictionary = Encoding.UTF8.GetBytes("old");
@@ -121,7 +160,9 @@ public sealed class PatchStateInspectorTests
                 formatVersion = 1,
                 installedBy = "STM32CubeMX Chinese Patcher",
                 cubeMxRoot = install.RootPath,
-                agentLine = PatcherPaths.AgentLine(install.RootPath),
+                agentLine = legacyStartupFormat
+                    ? $"-javaagent:{PatcherPaths.AgentPath(install.RootPath)}={PatcherPaths.DictionaryPath(install.RootPath)}"
+                    : PatcherPaths.AgentLine(install.RootPath),
                 agentJarSha256 = Convert.ToHexString(SHA256.HashData(legacyAgent)),
                 dictionarySha256 = Convert.ToHexString(SHA256.HashData(legacyDictionary))
             }),

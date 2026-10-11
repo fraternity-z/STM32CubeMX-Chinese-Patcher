@@ -16,7 +16,7 @@ public final class CubeMxZhCompatibilityAgent {
         } catch (Exception exception) {
             System.err.println(
                 "[STM32CubeMX zh-agent] Plugin tab compatibility disabled: "
-                    + exception.getClass().getSimpleName());
+                    + exception.getClass().getSimpleName() + ": " + exception.getMessage());
         }
     }
 }

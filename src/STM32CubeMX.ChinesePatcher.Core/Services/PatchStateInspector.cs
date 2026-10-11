@@ -90,9 +90,12 @@ public sealed class PatchStateInspector(IPayloadProvider payloadProvider)
 
             if (hasManagedLine && payloadMatches)
             {
+                var currentLine = PatcherPaths.AgentLine(installation.RootPath);
+                var hasCurrentLine = iniLines.Any(line => string.Equals(
+                    line.Trim(), currentLine, StringComparison.OrdinalIgnoreCase));
                 return new PatchInspection(
-                    LocalizationState.Installed,
-                    "当前版本已汉化。",
+                    hasCurrentLine ? LocalizationState.Installed : LocalizationState.NeedsUpdate,
+                    hasCurrentLine ? "当前版本已汉化。" : "汉化启动配置需要更新，以支持包含空格的安装路径。",
                     true,
                     true);
             }
@@ -128,13 +131,21 @@ public sealed class PatchStateInspector(IPayloadProvider payloadProvider)
         }
     }
 
-    public static bool IsManagedAgentLine(string line, string rootPath)
+    public static bool IsManagedAgentLine(string? line, string rootPath)
     {
-        return !string.IsNullOrWhiteSpace(line)
-            && string.Equals(
-                line.Trim(),
-                PatcherPaths.AgentLine(rootPath),
-                StringComparison.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return false;
+        }
+
+        var value = line.Trim();
+        var agentPath = PatcherPaths.AgentPath(rootPath);
+        var dictionaryPath = PatcherPaths.DictionaryPath(rootPath);
+        var legacyLine = $"-javaagent:{agentPath}={dictionaryPath}";
+        var quotedLegacyLine = $"-javaagent:\"{agentPath}\"=\"{dictionaryPath}\"";
+        return string.Equals(value, PatcherPaths.AgentLine(rootPath), StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, legacyLine, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, quotedLegacyLine, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TargetsManagedAgentPath(string line, string rootPath)
@@ -179,10 +190,7 @@ public sealed class PatchStateInspector(IPayloadProvider payloadProvider)
                     StringComparison.Ordinal)
                 || !document.RootElement.TryGetProperty("cubeMxRoot", out var rootElement)
                 || !document.RootElement.TryGetProperty("agentLine", out var agentLineElement)
-                || !string.Equals(
-                    agentLineElement.GetString(),
-                    PatcherPaths.AgentLine(rootPath),
-                    StringComparison.OrdinalIgnoreCase)
+                || !IsManagedAgentLine(agentLineElement.GetString(), rootPath)
                 || !document.RootElement.TryGetProperty("agentJarSha256", out var agentHashElement)
                 || !document.RootElement.TryGetProperty("dictionarySha256", out var dictionaryHashElement))
             {

@@ -59,12 +59,12 @@ internal sealed class ProgressCollector : IProgress<OperationProgress>
 
 internal sealed class TempCubeMxFixture : IDisposable
 {
-    public TempCubeMxFixture(string iniContent = "-Dfile.encoding=UTF8\n")
+    public TempCubeMxFixture(string iniContent = "-Dfile.encoding=UTF8\n", string pathSuffix = "")
     {
         RootPath = Path.Combine(
             Path.GetTempPath(),
             "STM32CubeMX-Chinese-Patcher.Tests",
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N") + pathSuffix);
         Directory.CreateDirectory(RootPath);
         File.WriteAllBytes(Path.Combine(RootPath, PatcherPaths.ExecutableName), [0x4D, 0x5A]);
         File.WriteAllText(

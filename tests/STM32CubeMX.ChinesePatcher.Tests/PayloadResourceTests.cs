@@ -88,6 +88,24 @@ public sealed class PayloadResourceTests
     }
 
     [TestMethod]
+    public void AgentJar_UsesDisplayOnlyTabHeaders()
+    {
+        using var jarStream = OpenResource(AgentResource);
+        using var archive = new ZipArchive(jarStream, ZipArchiveMode.Read);
+        var translatorEntry = archive.GetEntry("com/codex/cubemx/zh/SwingTranslator.class");
+        Assert.IsNotNull(translatorEntry);
+        using var classStream = translatorEntry.Open();
+        using var classBytes = new MemoryStream();
+        classStream.CopyTo(classBytes);
+        var constants = Encoding.Latin1.GetString(classBytes.ToArray());
+
+        StringAssert.Contains(constants, "getTitleAt");
+        StringAssert.Contains(constants, "setTabComponentAt");
+        Assert.IsFalse(constants.Contains("setTitleAt", StringComparison.Ordinal));
+        Assert.IsNotNull(archive.GetEntry("com/codex/cubemx/zh/SwingTranslator$TranslatedTabLabel.class"));
+    }
+
+    [TestMethod]
     public void TranslationDictionary_HasUniqueWellFormedEntriesForRc2()
     {
         using var stream = OpenResource(DictionaryResource);

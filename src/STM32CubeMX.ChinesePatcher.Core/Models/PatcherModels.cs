@@ -143,5 +143,5 @@ public static class PatcherPaths
         Path.Combine(LocalizationDirectory(rootPath), BackupFileName);
 
     public static string AgentLine(string rootPath) =>
-        $"-javaagent:{AgentPath(rootPath)}={DictionaryPath(rootPath)}";
+        $"-javaagent:\"{AgentPath(rootPath)}\"";
 }

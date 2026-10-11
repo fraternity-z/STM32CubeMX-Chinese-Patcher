@@ -3,7 +3,9 @@ param(
     [string]$ExecutablePath,
 
     [ValidateRange(10, 120)]
-    [int]$TimeoutSeconds = 60
+    [int]$TimeoutSeconds = 60,
+
+    [string]$JavaExecutable
 )
 
 Set-StrictMode -Version Latest
@@ -12,7 +14,8 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$fixture = [IO.Path]::GetFullPath((Join-Path $projectRoot 'artifacts\integration-fixture'))
+$fixtureName = "integration-fixture-$([Guid]::NewGuid().ToString('N')) Program Files 中文"
+$fixture = [IO.Path]::GetFullPath((Join-Path $projectRoot "artifacts\$fixtureName"))
 $fixtureParent = [IO.Path]::GetFullPath((Join-Path $projectRoot 'artifacts'))
 if (-not $fixture.StartsWith($fixtureParent + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
     throw "测试目录超出项目 artifacts：$fixture"
@@ -81,15 +84,11 @@ function Invoke-Worker {
     }
 }
 
+$fixtureCreated = $false
+$javaAgentExitCode = $null
 try {
-    if (Test-Path -LiteralPath $fixture) {
-        $fixtureItem = Get-Item -LiteralPath $fixture -Force
-        if (($fixtureItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-            throw "拒绝清理作为重解析点的测试目录：$fixture"
-        }
-        Remove-Item -LiteralPath $fixture -Recurse -Force
-    }
     New-Item -ItemType Directory -Path $fixture | Out-Null
+    $fixtureCreated = $true
     [IO.File]::WriteAllBytes(
         (Join-Path $fixture 'STM32CubeMX.exe'),
         [byte[]](0x4D, 0x5A))
@@ -104,6 +103,48 @@ try {
     $iniPath = Join-Path $fixture 'STM32CubeMX.l4j.ini'
     $agentHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $agentPath).Hash
     $dictionaryHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $dictionaryPath).Hash
+    if (-not [string]::IsNullOrWhiteSpace($JavaExecutable)) {
+        $javaStartInfo = [Diagnostics.ProcessStartInfo]::new()
+        $javaStartInfo.FileName = $JavaExecutable
+        $javaStartInfo.WorkingDirectory = $fixture
+        $javaStartInfo.UseShellExecute = $false
+        $javaStartInfo.CreateNoWindow = $true
+        $javaStartInfo.RedirectStandardOutput = $true
+        $javaStartInfo.RedirectStandardError = $true
+        $javaStartInfo.Arguments = '-Duser.home="{0}" {1} -version' -f `
+            $fixture, ([IO.File]::ReadAllLines($iniPath) -join ' ')
+        $javaProcess = [Diagnostics.Process]::Start($javaStartInfo)
+        if ($null -eq $javaProcess) {
+            throw '无法启动 Java Agent 验证进程。'
+        }
+        try {
+            $outputTask = $javaProcess.StandardOutput.ReadToEndAsync()
+            $errorTask = $javaProcess.StandardError.ReadToEndAsync()
+            if (-not $javaProcess.WaitForExit($TimeoutSeconds * 1000)) {
+                $javaProcess.Kill($true)
+                $javaProcess.WaitForExit()
+                throw "Java Agent 验证超过 ${TimeoutSeconds} 秒仍未退出，已终止。"
+            }
+            $javaAgentExitCode = $javaProcess.ExitCode
+            $javaOutput = $outputTask.GetAwaiter().GetResult()
+            $javaError = $errorTask.GetAwaiter().GetResult()
+            if ($javaAgentExitCode -ne 0) {
+                throw "Java Agent 启动失败，退出码：$javaAgentExitCode；$javaOutput $javaError"
+            }
+        }
+        finally {
+            $javaProcess.Dispose()
+        }
+        $agentLog = Join-Path $fixture '.stm32cubemx\zh-agent.log'
+        $agentLogText = if (Test-Path -LiteralPath $agentLog -PathType Leaf) {
+            [IO.File]::ReadAllText($agentLog)
+        } else {
+            'Agent 日志未生成'
+        }
+        if ($agentLogText -notmatch 'agent starting; dictionary entries=[1-9][0-9]*') {
+            throw "Java 已退出，但 Agent 未成功加载翻译词典。$agentLogText；$javaOutput $javaError"
+        }
+    }
     $managedBefore = @(
         [IO.File]::ReadAllLines($iniPath) |
             Where-Object {
@@ -139,12 +180,13 @@ try {
         ManagedLinesAfterApply = $managedBefore
         ManagedLinesAfterRollback = $managedAfter
         ForeignLinePreserved = $foreignPreserved
+        JavaAgentExitCode = $javaAgentExitCode
         AgentSha256 = $agentHash
         DictionarySha256 = $dictionaryHash
     }
 }
 finally {
-    if (Test-Path -LiteralPath $fixture) {
+    if ($fixtureCreated -and (Test-Path -LiteralPath $fixture)) {
         Remove-Item -LiteralPath $fixture -Recurse -Force
     }
 }

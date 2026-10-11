@@ -204,7 +204,7 @@ try {
     [IO.File]::WriteAllText($commandScript, "exit$([Environment]::NewLine)", [Text.UTF8Encoding]::new($false))
     [IO.File]::AppendAllText(
         $iniPath,
-        "-Duser.home=$userHome$([Environment]::NewLine)",
+        "-Duser.home=`"$userHome`"$([Environment]::NewLine)",
         [Text.UTF8Encoding]::new($false))
     $smokeBaselineIni = [IO.File]::ReadAllBytes($iniPath)
 
@@ -215,7 +215,7 @@ try {
 
     & $javaExecutable `
         "-Duser.home=$userHome" `
-        "-javaagent:$agentPath=$dictionaryPath" `
+        "-javaagent:$agentPath" `
         '-version' `
         1> $javaOutput `
         2> $javaError
