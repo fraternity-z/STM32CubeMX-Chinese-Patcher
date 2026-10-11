@@ -48,6 +48,7 @@ public final class PluginTabCompatibilityTest {
                 var tab = mainPanel.getTabComponent();
                 require(tab.getComponentCount() == 2, "未插入内部英文标签");
                 require("Project Manager".equals(mainPanel.getSelectedPluginView()), "CubeMX 未读取到英文插件名");
+                require("Project Manager".equals(mainPanel.getPluginView(0)), "按索引切换插件时未读取到英文插件名");
 
                 var internalLabel = (JLabel) tab.getComponent(0);
                 var visibleLabel = (JLabel) tab.getComponent(1);

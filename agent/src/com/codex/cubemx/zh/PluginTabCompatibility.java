@@ -197,7 +197,8 @@ final class PluginTabCompatibility {
 
             var calledByPluginLookup = STACK_WALKER.walk(frames -> frames.anyMatch(frame ->
                 MAIN_PANEL_CLASS.equals(frame.getClassName())
-                    && "getSelectedPluginView".equals(frame.getMethodName())));
+                    && ("getSelectedPluginView".equals(frame.getMethodName())
+                        || "getPluginView".equals(frame.getMethodName()))));
             return calledByPluginLookup ? originalText : translatedText;
         }
 

@@ -85,6 +85,7 @@ public sealed class PayloadResourceTests
         originalNameLabelClassStream.CopyTo(originalNameLabelClassBytes);
         var originalNameLabelClassConstants = Encoding.Latin1.GetString(originalNameLabelClassBytes.ToArray());
         StringAssert.Contains(originalNameLabelClassConstants, "getSelectedPluginView");
+        StringAssert.Contains(originalNameLabelClassConstants, "getPluginView");
     }
 
     [TestMethod]

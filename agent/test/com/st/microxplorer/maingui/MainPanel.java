@@ -20,7 +20,16 @@ public final class MainPanel extends JPanel {
     }
 
     public String getSelectedPluginView() {
-        for (var component : getTabComponent().getComponents()) {
+        return getPluginName(viewsTabPane.getSelectedIndex());
+    }
+
+    public String getPluginView(int index) {
+        return getPluginName(index);
+    }
+
+    private String getPluginName(int index) {
+        var tab = (JPanel) viewsTabPane.getTabComponentAt(index);
+        for (var component : tab.getComponents()) {
             if (component instanceof JLabel label && label.getIcon() == null) {
                 return label.getText();
             }
